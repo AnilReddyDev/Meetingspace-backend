@@ -3,6 +3,7 @@ package com.meetingspace.entity;
 import jakarta.persistence.*;
 
 @Entity
+@Table(name = "amenities")
 public class Amenity {
 
     @Id
