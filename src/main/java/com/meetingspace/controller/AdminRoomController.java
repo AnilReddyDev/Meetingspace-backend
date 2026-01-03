@@ -14,8 +14,14 @@ import java.util.List;
 @PreAuthorize("hasRole('ADMIN')")
 public class AdminRoomController {
 
-    @Autowired
-    private RoomService roomService;
+
+    private final RoomService roomService;
+
+
+    public AdminRoomController(RoomService roomService) {
+        super();
+        this.roomService = roomService;
+    }
 
     // CREATE ROOM
     @PostMapping

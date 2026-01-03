@@ -16,31 +16,56 @@ import org.apache.commons.codec.digest.DigestUtils;
 @Service
 public class AuthService {
 
-    @Autowired
-    private UserRepository userRepository;
+    private final UserRepository userRepository;
 
-    @Autowired
-    private RoleRepository roleRepository;
+    private final RoleRepository roleRepository;
 
-    @Autowired
-    private VerificationTokenRepository tokenRepository;
+    private final VerificationTokenRepository tokenRepository;
 
-    @Autowired
-    private PasswordEncoder passwordEncoder;
+    private final PasswordEncoder passwordEncoder;
 
-    @Autowired
-    private JwtUtil jwtUtil;
+    private final JwtUtil jwtUtil;
 
-    // ================= REGISTER =================
+
+
+
+    public AuthService(UserRepository userRepository, RoleRepository roleRepository,
+                       VerificationTokenRepository tokenRepository, PasswordEncoder passwordEncoder, JwtUtil jwtUtil) {
+        super();
+        this.userRepository = userRepository;
+        this.roleRepository = roleRepository;
+        this.tokenRepository = tokenRepository;
+        this.passwordEncoder = passwordEncoder;
+        this.jwtUtil = jwtUtil;
+    }
+
+    // REGISTER
     public void register(String username, String email, String password) {
 
         if (userRepository.findByEmail(email).isPresent()) {
             throw new RuntimeException("Email already registered");
         }
 
+        if (password == null || password.isBlank()) {
+            throw new RuntimeException("Password cannot be empty");
+        }
+
+        String passwordRegex =
+                "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[^A-Za-z0-9]).{8,}$";
+
+        if (!password.matches(passwordRegex)) {
+            throw new RuntimeException(
+                    "Password must be at least 8 characters long and contain " +
+                            "one uppercase letter, one lowercase letter, one number, " +
+                            "and one special character"
+            );
+        }
+
         User user = new User();
         user.setUsername(username);
         user.setEmail(email);
+
+        // Encode AFTER validation
         user.setPasswordHash(passwordEncoder.encode(password));
 
         Role role = roleRepository.findByName("USER")
@@ -60,11 +85,12 @@ public class AuthService {
 
         tokenRepository.save(token);
 
-        // In real project → send email
         System.out.println("Verification Token (for testing): " + rawToken);
     }
 
-    // ================= VERIFY EMAIL =================
+
+
+    // VERIFY EMAIL
     public void verifyEmail(String token) {
 
         String hashedToken = DigestUtils.sha256Hex(token);
@@ -84,7 +110,7 @@ public class AuthService {
         tokenRepository.delete(verificationToken);
     }
 
-    // ================= LOGIN =================
+    // LOGIN
     public String login(String email, String password) {
 
         User user = userRepository.findByEmail(email)

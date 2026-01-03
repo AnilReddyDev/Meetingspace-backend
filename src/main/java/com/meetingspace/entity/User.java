@@ -1,6 +1,10 @@
 package com.meetingspace.entity;
 
+import com.meetingspace.validation.AllowedEmailDomain;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
+
 import java.util.Set;
 import java.util.HashSet;
 
@@ -16,7 +20,11 @@ public class User {
     private String username;
 
     @Column(unique = true)
+    @NotBlank(message = "Email is required")
+    @Email(message = "Invalid email format")
+    @AllowedEmailDomain("hcltech.com")
     private String email;
+
 
     private String passwordHash;
     private boolean isActive = true;

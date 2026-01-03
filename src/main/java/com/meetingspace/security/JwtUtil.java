@@ -26,8 +26,9 @@ public class JwtUtil {
         this.expiration = expiration;
     }
 
-    // ================= GENERATE TOKEN =================
+    // GENERATE TOKEN
     public String generateToken(User user) {
+
 
         Map<String, Object> claims = new HashMap<>();
         claims.put(
@@ -35,7 +36,7 @@ public class JwtUtil {
                 user.getRoles()
                         .stream()
                         .map(Role::getName)
-                        .collect(Collectors.toList())
+                        .toList() // unmodifiable list (Java 16+)
         );
 
         return Jwts.builder()
@@ -47,7 +48,7 @@ public class JwtUtil {
                 .compact();
     }
 
-    // ================= VALIDATE TOKEN =================
+    // VALIDATE TOKEN
     public boolean validateToken(String token) {
         try {
             parseClaims(token);
@@ -57,12 +58,12 @@ public class JwtUtil {
         }
     }
 
-    // ================= EXTRACT EMAIL =================
+    // EXTRACT EMAIL
     public String extractEmail(String token) {
         return parseClaims(token).getSubject();
     }
 
-    // ================= EXTRACT ROLES =================
+    // EXTRACT ROLES
     public List<String> extractRoles(String token) {
         return parseClaims(token).get("roles", List.class);
     }

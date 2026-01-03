@@ -20,11 +20,20 @@ import java.util.stream.Collectors;
 @Component
 public class JwtFilter extends OncePerRequestFilter {
 
-    @Autowired
-    private JwtUtil jwtUtil;
 
-    @Autowired
-    private UserRepository userRepository;
+    private final JwtUtil jwtUtil;
+
+    private final UserRepository userRepository;
+
+
+
+    public JwtFilter(JwtUtil jwtUtil, UserRepository userRepository) {
+        super();
+        this.jwtUtil = jwtUtil;
+        this.userRepository = userRepository;
+    }
+
+
 
     @Override
     protected void doFilterInternal(

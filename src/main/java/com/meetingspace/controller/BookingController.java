@@ -16,11 +16,18 @@ import java.util.Map;
 @RequestMapping("/api/v1/bookings")
 public class BookingController {
 
-    @Autowired
-    private BookingService bookingService;
 
-    @Autowired
-    private UserRepository userRepository;
+    private final BookingService bookingService;
+
+
+    private final UserRepository userRepository;
+
+
+    public BookingController(BookingService bookingService, UserRepository userRepository) {
+        super();
+        this.bookingService = bookingService;
+        this.userRepository = userRepository;
+    }
 
     // CREATE BOOKING
     @PostMapping
@@ -39,10 +46,32 @@ public class BookingController {
         );
     }
 
-    // CANCEL BOOKING
+    // CANCEL BOOKING BY ROOM ID (OPTIONAL)
     @PostMapping("/{id}/cancel")
     public Map<String, String> cancelBooking(@PathVariable Long id) {
         bookingService.cancel(id);
         return Map.of("status", "CANCELLED");
     }
+
+    // CANCEL BOOKING BY TIME SLOTS, ROOM ID AND CHECKS IF USER IS OWNER
+    @PostMapping("/cancel")
+    public Map<String, String> cancelBySlot(
+            @RequestBody BookingRequest request,
+            Authentication authentication
+    ) {
+        String email = authentication.getName();
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        bookingService.cancelBySlot(
+                request.roomId,
+                request.startTime,
+                request.endTime,
+                user
+        );
+
+        return Map.of("status", "CANCELLED");
+    }
+
+
 }

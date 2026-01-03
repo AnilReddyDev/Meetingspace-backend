@@ -7,36 +7,71 @@ import com.meetingspace.repository.BookingRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.*;
-
 @Service
 public class AvailabilityService {
 
-    @Autowired
-    private BookingRepository bookingRepository;
+    private final BookingRepository bookingRepository;
 
-    // ================= ROOM AVAILABILITY =================
-    public AvailabilityResponse get(Long roomId) {
+    public AvailabilityService(BookingRepository bookingRepository) {
+        this.bookingRepository = bookingRepository;
+    }
+
+    public AvailabilityResponse getAvailability(Long roomId, LocalDate date) {
+
+        LocalDateTime dayStart = date.atTime(9, 0);
+        LocalDateTime dayEnd = date.atTime(18, 0);
+
+        List<Booking> bookings =
+                bookingRepository.findBookingsForDate(roomId, date);
+
+        List<AvailabilityResponse.Slot> slots = new ArrayList<>();
+        LocalDateTime current = dayStart;
+
+        for (Booking booking : bookings) {
+
+            if (current.isBefore(booking.getStartTime())) {
+                slots.add(createSlot(
+                        current,
+                        booking.getStartTime(),
+                        "AVAILABLE"
+                ));
+            }
+
+            slots.add(createSlot(
+                    booking.getStartTime(),
+                    booking.getEndTime(),
+                    "BOOKED"
+            ));
+
+            current = booking.getEndTime();
+        }
+
+        if (current.isBefore(dayEnd)) {
+            slots.add(createSlot(
+                    current,
+                    dayEnd,
+                    "AVAILABLE"
+            ));
+        }
 
         AvailabilityResponse response = new AvailabilityResponse();
-        List<AvailabilityResponse.Slot> slots = new ArrayList<>();
-
-        // Example static timeline (can be enhanced)
-        AvailabilityResponse.Slot booked = new AvailabilityResponse.Slot();
-        booked.start = "10:00";
-        booked.end = "11:30";
-        booked.status = "BOOKED";
-
-        AvailabilityResponse.Slot available = new AvailabilityResponse.Slot();
-        available.start = "11:30";
-        available.end = "18:00";
-        available.status = "AVAILABLE";
-
-        slots.add(booked);
-        slots.add(available);
-
         response.availability = slots;
         return response;
+    }
+
+    private AvailabilityResponse.Slot createSlot(
+            LocalDateTime start,
+            LocalDateTime end,
+            String status
+    ) {
+        AvailabilityResponse.Slot slot = new AvailabilityResponse.Slot();
+        slot.start = start.toString();
+        slot.end = end.toString();
+        slot.status = status;
+        return slot;
     }
 }

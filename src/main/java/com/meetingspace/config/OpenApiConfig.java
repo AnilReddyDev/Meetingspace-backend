@@ -12,15 +12,16 @@ public class OpenApiConfig {
 
     @Bean
     public OpenAPI meetingSpaceOpenAPI() {
+        String BA = "bearerAuth";
         return new OpenAPI()
                 .info(new Info()
                         .title("MeetingSpace Backend API")
                         .version("1.0.0"))
-                .addSecurityItem(new SecurityRequirement().addList("bearerAuth"))
+                .addSecurityItem(new SecurityRequirement().addList(BA))
                 .components(new io.swagger.v3.oas.models.Components()
-                        .addSecuritySchemes("bearerAuth",
+                        .addSecuritySchemes(BA,
                                 new SecurityScheme()
-                                        .name("bearerAuth")
+                                        .name(BA)
                                         .type(SecurityScheme.Type.HTTP)
                                         .scheme("bearer")
                                         .bearerFormat("JWT")));

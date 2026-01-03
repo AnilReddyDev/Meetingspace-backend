@@ -49,4 +49,9 @@ public class Booking {
     public void setUser(User user) {
         this.user = user;
     }
+
+
+    public String getStatus() {
+        return status;
+    }
 }

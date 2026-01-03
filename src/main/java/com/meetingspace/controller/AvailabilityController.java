@@ -6,16 +6,30 @@ import com.meetingspace.dto.AvailabilityResponse;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import java.time.LocalDate;
+
 @RestController
 @RequestMapping("/api/v1/rooms")
 public class AvailabilityController {
 
-    @Autowired
-    private AvailabilityService availabilityService;
+
+    private final AvailabilityService availabilityService;
+
+
+
+    public AvailabilityController(AvailabilityService availabilityService) {
+        super();
+        this.availabilityService = availabilityService;
+    }
+
+
 
     // ROOM AVAILABILITY (HOME PAGE)
-    @GetMapping("/{roomId}/availability")
-    public AvailabilityResponse getAvailability(@PathVariable Long roomId) {
-        return availabilityService.get(roomId);
+    @GetMapping("/{roomId}")
+    public AvailabilityResponse getAvailability(
+            @PathVariable Long roomId,
+            @RequestParam LocalDate date
+    ) {
+        return availabilityService.getAvailability(roomId, date);
     }
 }

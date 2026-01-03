@@ -12,8 +12,14 @@ import java.util.Map;
 @RequestMapping("/api/v1/auth")
 public class AuthController {
 
-    @Autowired
-    private AuthService authService;
+
+    private final AuthService authService;
+
+
+    public AuthController(AuthService authService) {
+        super();
+        this.authService = authService;
+    }
 
     // REGISTER
     @PostMapping("/register")

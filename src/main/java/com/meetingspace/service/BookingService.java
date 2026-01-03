@@ -13,18 +13,27 @@ import java.util.UUID;
 @Service
 public class BookingService {
 
-    @Autowired
-    private BookingRepository bookingRepository;
+    private final BookingRepository bookingRepository;
 
-    @Autowired
-    private RoomRepository roomRepository;
+    private final RoomRepository roomRepository;
 
-    // ================= CREATE BOOKING =================
+
+    public BookingService(BookingRepository bookingRepository, RoomRepository roomRepository) {
+        super();
+        this.bookingRepository = bookingRepository;
+        this.roomRepository = roomRepository;
+    }
+
+    // CREATE BOOKING
     @Transactional
     public Booking book(Long roomId,
                         LocalDateTime startTime,
                         LocalDateTime endTime,
                         User user) {
+
+        if (!startTime.isBefore(endTime)) {
+            throw new RuntimeException("Start time must be before end time");
+        }
 
         if (bookingRepository.conflict(roomId, startTime, endTime).isPresent()) {
             throw new RuntimeException("Room already booked for this time slot");
@@ -44,14 +53,46 @@ public class BookingService {
         return bookingRepository.save(booking);
     }
 
-    // ================= CANCEL BOOKING =================
+
+    // CANCEL BOOKING (OPTIONAL – backward compatibility)
     @Transactional
     public void cancel(Long bookingId) {
 
         Booking booking = bookingRepository.findById(bookingId)
                 .orElseThrow(() -> new RuntimeException("Booking not found"));
 
+        if (!"CONFIRMED".equals(booking.getStatus())) {
+            throw new RuntimeException("Booking already cancelled");
+        }
+
         booking.setStatus("CANCELLED");
         bookingRepository.save(booking);
     }
+
+    //CANCEL BY SLOT
+    @Transactional
+    public void cancelBySlot(
+            Long roomId,
+            LocalDateTime startTime,
+            LocalDateTime endTime,
+            User user
+    ) {
+
+        Booking booking = bookingRepository
+                .findForCancellationByUser(
+                        roomId,
+                        startTime,
+                        endTime,
+                        user.getEmail()
+                )
+                .orElseThrow(() -> new RuntimeException(
+                        "No active booking found for this user and time slot"
+                ));
+
+        booking.setStatus("CANCELLED");
+        bookingRepository.save(booking);
+    }
+
+
+
 }

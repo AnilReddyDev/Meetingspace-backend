@@ -12,13 +12,19 @@ import java.util.*;
 @Service
 public class RoomService {
 
-    @Autowired
-    private RoomRepository roomRepository;
 
-    @Autowired
-    private AmenityRepository amenityRepository;
+    private final RoomRepository roomRepository;
 
-    // ================= CREATE ROOM =================
+    private final AmenityRepository amenityRepository;
+
+
+    public RoomService(RoomRepository roomRepository, AmenityRepository amenityRepository) {
+        super();
+        this.roomRepository = roomRepository;
+        this.amenityRepository = amenityRepository;
+    }
+
+    // CREATE ROOM
     public Room create(RoomRequest request) {
 
         Room room = new Room();
@@ -40,7 +46,7 @@ public class RoomService {
         return roomRepository.save(room);
     }
 
-    // ================= GET ALL ROOMS =================
+    // GET ALL ROOMS
     public List<Room> getAll() {
         return roomRepository.findAll();
     }
